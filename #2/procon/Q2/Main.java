@@ -251,6 +251,9 @@ public class Main {
 		if (hCount != 0) {
 			System.out.println(heart);
 		}
+		
+		br.close();
+		ir.close();
 	}
 
 }

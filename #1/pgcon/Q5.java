@@ -11,7 +11,6 @@ public class Q5 {
 	public Path criticalPathSet;
 
 	public static void main(String[] args) throws IOException {
-		// TODO 自動生成されたメソッド・スタブ
 		HashMap<String, Job> jobMap = new HashMap<String, Job>();
 		Q5 q5 = new Q5();
 		String[] endFlag;

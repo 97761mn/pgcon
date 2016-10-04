@@ -10,11 +10,13 @@ public class Main {
 		String line = "";
 		
 		InputStreamReader ir = new InputStreamReader(System.in);
-    	BufferedReader br = new BufferedReader(ir);
+		BufferedReader br = new BufferedReader(ir);
 		line = br.readLine();
 		StringBuffer sb = new StringBuffer(line);
 		line = sb.reverse().toString();
 		System.out.println(line);
-    }
+		br.close();
+		ir.close();
+	}
 
 }

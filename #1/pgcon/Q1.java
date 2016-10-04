@@ -8,16 +8,15 @@ import java.util.Arrays;
 public class Q1 {
 
 	public static void main(String[] args) throws IOException {
-        // TODO 自動生成されたメソッド・スタブ
-    	Integer fullNumberOfBook;
-    	String[] fullNumberOfBookArr;
-    	String[] myBookTmp;
-    	Integer[] myBook;
-    	String[] sellBookTmp;
-    	Integer[] sellBook;
-    	String answer = "None";
-    	
-    	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		Integer fullNumberOfBook;
+		String[] fullNumberOfBookArr;
+		String[] myBookTmp;
+		Integer[] myBook;
+		String[] sellBookTmp;
+		Integer[] sellBook;
+		String answer = "None";
+		
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		String line1 = br.readLine();
 		fullNumberOfBookArr = line1.split(" ");
 		fullNumberOfBook = Integer.parseInt(fullNumberOfBookArr[0]);
@@ -66,6 +65,6 @@ public class Q1 {
 		}
 		
 		System.out.println(answer);
-    }
+	}
 
 }

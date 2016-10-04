@@ -43,6 +43,9 @@ public class Main {
 			}
 		}
 		System.out.println(state.length());
+		
+		br.close();
+		ir.close();
 	}
 
 }

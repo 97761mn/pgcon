@@ -6,16 +6,15 @@ import java.io.InputStreamReader;
 
 public class Q3 {
 
-    public static void main(String[] args) throws IOException {
-        // TODO 自動生成されたメソッド・スタブ
-    	String[] inputStr;
-    	int limit;
-    	int rateBfr,rateAft,total;
-    	int max = 0;
-    	int tmp = 0;
-    	int totalCompare = 0;
-    	
-    	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	public static void main(String[] args) throws IOException {
+		String[] inputStr;
+		int limit;
+		int rateBfr,rateAft,total;
+		int max = 0;
+		int tmp = 0;
+		int totalCompare = 0;
+		
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		String line = br.readLine();
 		inputStr = line.split(" ");
 		

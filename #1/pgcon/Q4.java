@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 public class Q4 {
 
 	public static void main(String[] args) throws IOException {
-		// TODO 自動生成されたメソッド・スタブ
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		String readLine = br.readLine();
 		String[] lineArr = readLine.split(" ");
