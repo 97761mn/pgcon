@@ -111,11 +111,11 @@ public class Main {
 		for (int i = 0; i < 25; i++) {
 			System.out.println(outStr[i]);
 		}
-		
+
 		br.close();
 		ir.close();
 	}
-	
+
 	public String[] scrollScreen(String[] input, String emp){
 		for(int i=0; i < 24; i++){
 			input[i] = input[i+1];
