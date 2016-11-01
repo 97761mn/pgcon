@@ -65,8 +65,8 @@ public class Main {
 */
 
 		// createWatchList
-		bestWatchList = myTools.getNewWatchList(new int[numOfMovie], new MovieTime[numOfMovie]);
-		list = myTools.getNewWatchList(new int[numOfMovie], new MovieTime[numOfMovie]);
+		bestWatchList = myTools.getNewWatchList(new int[numOfMovie], new int[numOfMovie]);
+		list = myTools.getNewWatchList(new int[numOfMovie], new int[numOfMovie]);
 
 		myTools.searchBestProgram(list);
 		myTools.showBestList();
@@ -77,17 +77,20 @@ public class Main {
 		int num = bestWatchList.getNumOfList();
 		int com = bestWatchList.getCombi();
 		int indexes[] = bestWatchList.getIndexes();
-		MovieTime set[] = bestWatchList.getTimeSets();
+		int set[] = bestWatchList.getTimeSets();
+		int interval[] = bestWatchList.getInterval(); 
+		MovieProgram tmpMovie;
 
 		System.out.println(num);
 		System.out.println(com);
 		for(int i=0; i < num; i++){
+			tmpMovie = program[indexes[i]];
 			System.out.print(
-				indexes[i] + " " + myTools.displayTime(set[i].getStart()) + " " +  myTools.displayTime(set[i].getEnd())
+				tmpMovie.getTitle() + " " + tmpMovie.getTimeSets()[set[i]].getStart().displayTime() + " " + tmpMovie.getTimeSets()[set[i]].getEnd().displayTime()
 			);
 
 			if((i+1) != num) {
-				System.out.print(" " + set[i].getInterval());
+				System.out.print(" " + interval[i]);
 			}
 			System.out.println();
 		}
@@ -98,60 +101,59 @@ public class Main {
 		for(int i=0; i < program.length; i++){
 			MovieProgram tmpPg = program[i];
 			int       nowIndex = tmpPg.getIndex();
-			System.out.println("i : "+ i);
-			System.out.println("in : "+ nowIndex);
+//			System.out.println("i : "+ i);
+//			System.out.println("in : "+ nowIndex);
 
 			if(!list.isWatched(nowIndex)){
 				MovieTime tmpPgSets[] = tmpPg.getTimeSets();
 
 				//ある映画を前から見れるか見ていく
-				LoopJ:
 				for(int j=0; j < tmpPgSets.length; j++){
-					System.out.println("j : "+ j);
-					System.out.println(tmpPgSets.length);
+//					System.out.println("j : "+ j);
+//					System.out.println(tmpPgSets.length);
 					MovieTime tmpPgSet = tmpPgSets[j];
 
 					Main myTools = new Main();
 					int tmpNumOfList = list.getNumOfList();
 
-					MovieTime tmpLSets[] = list.getTimeSets();
+					int tmpLIndexes[] = list.getIndexes();
+					int tmpLSets[] = list.getTimeSets();
 
-					String end;
+					Time end;
 					if(tmpNumOfList == 0) {
-						end = "00:00";
+						end = new Time(0,0);
 					} else {
-						end = tmpLSets[tmpNumOfList-1].getEnd();
+						int tmpLIndex = tmpLIndexes[tmpNumOfList-1];
+						int tmpLSet   = tmpLSets[tmpNumOfList-1];
+						end = program[tmpLIndex].getTimeSets()[tmpLSet].getEnd();
 					}
-					String next = tmpPgSet.getStart();
+					Time next = tmpPgSet.getStart();
 
 					//見れるかな？
-					System.out.println(end+"---"+next);
+//					System.out.println(end+"---"+next);
 					if(myTools.isAbleToWatch(end, next)){
-						int tmpIndexes[] = new int[list.getIndexes().length];
-						MovieTime tmpTimeSets[] = new MovieTime[list.getIndexes().length];
-
-						for(int k=0; k < list.getIndexes().length; k++){
-							tmpIndexes[k] = list.getIndexes()[k];
-							tmpTimeSets[k] = myTools.getNewMovieTime(new String(list.getTimeSets()[k].getStart()), new String(list.getTimeSets()[k].getEnd()));
-						}
+						int tmpIndexes[] = list.getIndexes().clone();
+						int tmpTimeSets[] = list.getTimeSets().clone();
+						
 						WatchList tmpWatchList = myTools.getNewWatchList(tmpIndexes, tmpTimeSets);
-						for(int k =0; k < list.getIndexes().length; k++ ){
-							System.out.println(k+":"+list.getIndexes()[k]);
-						}
+						tmpWatchList.setNumOfList(list.getNumOfList());
+						
+						//////////////////////ここから
 						int tmpNumOfWl = tmpWatchList.getNumOfList();
 						int tmpWlIndexes[] = tmpWatchList.getIndexes();
-						MovieTime tmpWlSets[] = tmpWatchList.getTimeSets();
+						int tmpWlSets[] = tmpWatchList.getTimeSets();
 
-						System.out.println("eee: "+ tmpNumOfWl);
+//						System.out.println("eee: "+ tmpNumOfWl);
 						tmpWlIndexes[tmpNumOfWl] = nowIndex;
-						tmpWlSets[tmpNumOfWl] = tmpPgSet;
+						tmpWlSets[tmpNumOfWl] = j;
+						tmpWatchList.addNumOfList();
 
 						if (tmpNumOfWl > 1) {
-							String prevEnd = tmpWlSets[tmpNumOfWl - 2].getEnd();
-							String nowStart = tmpPgSet.getStart();
+							Time prevEnd = tmpPgSets[tmpNumOfWl-2].getEnd();
+							Time nowStart = tmpPgSet.getStart();
 
 							int diff = myTools.differTime(prevEnd, nowStart);
-							tmpWlSets[tmpNumOfWl - 2].setInterval(diff);
+							tmpWatchList.setInterval(diff, tmpNumOfWl-2);
 						}
 
 						tmpWatchList.setIndexes(tmpWlIndexes);
@@ -168,10 +170,11 @@ public class Main {
 								bestWatchList.resetCombi();
 							}
 							bestWatchList.setMaxList(bestWatchList.getNumOfList());
-							System.out.println("end");
+//							System.out.println("end");
+//							tmpWatchList = null;
 							myTools.searchBestProgram(list);
 						} else {
-							System.out.println("go");
+//							System.out.println("go");
 							myTools.searchBestProgram(tmpWatchList);
 						}
 
@@ -195,61 +198,50 @@ public class Main {
 		}
 	}
 
-	public boolean isAbleToWatch(String endTime, String nextTime){
+	public boolean isAbleToWatch(Time endTime, Time nextTime){
 		Main myTools = new Main();
 		endTime = addTime(endTime, minInterval);
-		System.out.println(endTime+"---"+nextTime);
+//		System.out.println(endTime+"---"+nextTime);
 
 		return myTools.isEarlier(endTime, nextTime);
 	}
 
-	public String addTime(String endTime, int interval) {
-		String timeArr[] = endTime.split(":");
-		int hh = Integer.parseInt(timeArr[0]);
-		int mm = Integer.parseInt(timeArr[1]);
+	public Time addTime(Time endTime, int interval) {
+		int hh = endTime.getHour();
+		int mm = endTime.getMinute();
 		int hour;
 
 		mm += interval;
 		hour = mm / 60;
 		hh += hour;
 		mm -= (hour * 60);
+		
+		Time result = new Time(hh, mm);
 
-		return hh + ":" + mm;
+		return result;
 	}
 
-	public int differTime(String endTime, String nextTime){
+	public int differTime(Time endTime, Time nextTime){
 		int diff;
-		String endArr[] = endTime.split(":");
-		String nextArr[]  = nextTime.split(":");
 
-		int endHH  = Integer.parseInt(endArr[0]);
-		int endMM  = Integer.parseInt(endArr[1]);
-		int nextHH = Integer.parseInt(nextArr[0]);
-		int nextMM = Integer.parseInt(nextArr[1]);
+		int endHH = endTime.getHour();
+		int endMM = endTime.getMinute();
+		int nextHH  = nextTime.getHour();
+		int nextMM  = nextTime.getMinute();
 
 		diff = (nextHH - endHH)*60  + (nextMM - endMM);
 
 		return diff;
 	}
 
-	public String displayTime(String time){
-		String arr[] = time.split(":");
-		arr[0] = ("0" + arr[0]).substring(0, 2);
-		arr[1] = ("0" + arr[1]).substring(0, 2);
-
-		return arr[0] + ":" + arr[1];
-	}
-
 	//同時刻でもTRUE
-	public boolean isEarlier(String early, String late){
+	public boolean isEarlier(Time early, Time late){
 		boolean earlier = false;
-		String earlyArr[] = early.split(":");
-		String lateArr[]  = late.split(":");
 
-		int earlyHH = Integer.parseInt(earlyArr[0]);
-		int earlyMM = Integer.parseInt(earlyArr[1]);
-		int lateHH  = Integer.parseInt(lateArr[0]);
-		int lateMM  = Integer.parseInt(lateArr[1]);
+		int earlyHH = early.getHour();
+		int earlyMM = early.getMinute();
+		int lateHH  = late.getHour();
+		int lateMM  = late.getMinute();
 
 		if(earlyHH < lateHH){
 			earlier = true;
@@ -260,15 +252,13 @@ public class Main {
 		return earlier;
 	}
 
-	public boolean isSame(String early, String late){
+	public boolean isSame(Time early, Time late){
 		boolean same = false;
-		String earlyArr[] = early.split(":");
-		String lateArr[]  = late.split(":");
 
-		int earlyHH = Integer.parseInt(earlyArr[0]);
-		int earlyMM = Integer.parseInt(earlyArr[1]);
-		int lateHH  = Integer.parseInt(lateArr[0]);
-		int lateMM  = Integer.parseInt(lateArr[1]);
+		int earlyHH = early.getHour();
+		int earlyMM = early.getMinute();
+		int lateHH  = late.getHour();
+		int lateMM  = late.getMinute();
 
 		if((earlyHH == lateHH) && (earlyMM == lateMM)) {
 			same = true;
@@ -303,12 +293,12 @@ public class Main {
 		} else {
 			if (bestWatchList.getNumOfList() < tmp.getNumOfList()) {
 				isBetter = true;
-			} else {
-				MovieTime tmpTimes[] = tmp.getTimeSets();
-				MovieTime bestTimes[] = bestWatchList.getTimeSets();
+			} else if (bestWatchList.getNumOfList() < tmp.getNumOfList()) {
+				MovieTime tmpTimes[] = program[tmp.getIndexes()[0]].getTimeSets();
+				MovieTime bestTimes[] = program[bestWatchList.getIndexes()[0]].getTimeSets();
 
-				String tmpStart = tmpTimes[0].getStart();
-				String bestStart = bestTimes[0].getStart();
+				Time tmpStart = tmpTimes[0].getStart();
+				Time bestStart = bestTimes[0].getStart();
 
 				if (myTools.isEarlier(bestStart, tmpStart)) {
 					// tmpのほうが遅いのでok
@@ -330,7 +320,7 @@ public class Main {
 		return new WatchList();
 	}
 
-	public WatchList getNewWatchList(int[] indexs, MovieTime[] timeSets) {
+	public WatchList getNewWatchList(int[] indexs, int[] timeSets) {
 		return new WatchList(indexs, timeSets);
 	}
 
@@ -355,7 +345,9 @@ public class Main {
 	// 見るつもりの映画と時間のセット、出力にも使う
 	public class WatchList {
 		int[] indexes;
-		MovieTime[] timeSets;
+		int[] timeSets;
+		int[] interval;
+		int numOfList;
 
 		int maxList;
 		int combi;
@@ -363,9 +355,11 @@ public class Main {
 		WatchList() {
 		}
 
-		WatchList(int[] indexes, MovieTime[] timeSets) {
+		WatchList(int[] indexes, int[] timeSets) {
 			this.indexes = indexes;
 			this.timeSets = timeSets;
+			this.interval = new int[numOfMovie];
+			this.numOfList = 0;
 			this.maxList = 0;
 			this.combi = 0;
 		}
@@ -378,11 +372,23 @@ public class Main {
 			this.indexes = indexes;
 		}
 
-		public MovieTime[] getTimeSets() {
+		public int[] getTimeSets() {
 			return timeSets;
 		}
 
-		public void setTimeSet(MovieTime[] timeSets) {
+		public int[] getInterval() {
+			return interval;
+		}
+
+		public void setInterval(int[] interval) {
+			this.interval = interval;
+		}
+
+		public void setInterval(int value, int index) {
+			this.interval[index] = value;
+		}
+
+		public void setTimeSet(int[] timeSets) {
 			this.timeSets = timeSets;
 		}
 
@@ -406,14 +412,17 @@ public class Main {
 			combi = 1;
 		}
 
+		public void setNumOfList(int numOfList) {
+			this.numOfList = numOfList;
+		}
+		
 		public int getNumOfList() {
-			int cnt = 0;
-			for (int i = 0; i < indexes.length; i++) {
-				if (indexes[i] != 0) {
-					cnt++;
-				}
-			}
-			return cnt;
+			return numOfList;
+		}
+		
+		
+		public void addNumOfList(){
+			numOfList++;
 		}
 
 		public boolean isWatched(int index){
@@ -465,42 +474,76 @@ public class Main {
 	}
 
 	public class MovieTime {
-		String start = "";
-		String end = "";
-		int interval = 0;
+		Time start = new Time();
+		Time end = new Time();
 
 		MovieTime() {
 		}
 
 		MovieTime(String start, String end) {
-			this.start = start;
-			this.end = end;
+			this.start.setTime(start);;
+			this.end.setTime(end);;
 		}
 
-		public String getStart() {
+		public Time getStart() {
 			return start;
 		}
 
-		public void setStart(String start) {
+		public void setStart(Time start) {
 			this.start = start;
 		}
 
-		public String getEnd() {
+		public Time getEnd() {
 			return end;
 		}
 
-		public void setEnd(String end) {
+		public void setEnd(Time end) {
 			this.end = end;
 		}
 
-		public int getInterval() {
-			return interval;
+	}
+	
+	public class Time {
+		int hour = 0;
+		int minute = 0;
+
+		Time() {
 		}
 
-		public void setInterval(int interval) {
-			this.interval = interval;
+		Time(int hh, int mm) {
+			this.hour   = hh;
+			this.minute = mm;
+		}
+
+		public int getHour() {
+			return hour;
+		}
+
+		public void setHour(int hh) {
+			this.hour = hh;
+		}
+
+		public int getMinute() {
+			return minute;
+		}
+
+		public void setMinute(int mm) {
+			this.minute = mm;
+		}
+		
+		public void setTime(String time){
+			String[] arr = time.split(":");
+			this.hour = Integer.parseInt(arr[0]);
+			this.minute = Integer.parseInt(arr[1]);
+		}
+
+		public String displayTime(){
+			String hh = ("0" + this.hour).substring(0, 2);
+			String mm = ("0" + this.minute).substring(0, 2);
+			return hh + ":" + mm;
 		}
 
 	}
+
 
 }
