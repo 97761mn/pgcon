@@ -1,7 +1,7 @@
 /*
-まだコーディング途中です。
-
+テスト通りました
 */
+
 package procon.Q5;
 
 import java.io.BufferedReader;
@@ -50,26 +50,12 @@ public class Main {
 			program[i] = tmpProgram;
 		}
 
-/*		for(int i=0; i< numOfMovie; i++) {
-			System.out.println(i+":");
-			System.out.println("index : "+program[i].getIndex());
-			System.out.println("title : "+program[i].getTitle());
-			tmpSets = program[i].getTimeSets();
-
-			for(int j=0;j<tmpSets.length; j++) {
-				System.out.println("set."+j+":");
-				System.out.println("  start : "+tmpSets[j].getStart());
-				System.out.println("  end : "+tmpSets[j].getEnd());
-			}
-		}
-*/
 
 		// createWatchList
 		bestWatchList = myTools.getNewWatchList(new int[numOfMovie], new int[numOfMovie]);
 		list = myTools.getNewWatchList(new int[numOfMovie], new int[numOfMovie]);
 
 		myTools.searchBestProgram(list);
-		System.out.println("end!!!!!");
 		myTools.showBestList();
 	}
 
@@ -78,7 +64,7 @@ public class Main {
 		int com = bestWatchList.getCombi();
 		int indexes[] = bestWatchList.getIndexes();
 		int set[] = bestWatchList.getTimeSets();
-		int interval[] = bestWatchList.getInterval(); 
+		int interval[] = bestWatchList.getInterval();
 		MovieProgram tmpMovie;
 
 		System.out.println(num);
@@ -96,33 +82,19 @@ public class Main {
 		}
 	}
 
-	public boolean ttt = true;
-	public int cnt = 0;
 	public void searchBestProgram(WatchList list) {
 		//すべての映画を考慮していく
 		for(int i=0; i < program.length; i++){
 			MovieProgram tmpPg = program[i];
 			int       nowIndex = tmpPg.getIndex();
-			if(cnt < 800){
-			System.out.println("i : "+ i);
-			}
-//			System.out.println("in : "+ nowIndex);
 
 			if(!list.isWatched(nowIndex)){
 				MovieTime tmpPgSets[] = tmpPg.getTimeSets();
 
 				//ある映画を前から見れるか見ていく
 				for(int j=0; j < tmpPgSets.length; j++){
-					if(cnt < 800){
-					System.out.println(tmpPgSets.length);
-					ttt=false;
-					System.out.print("j : "+ j + ", ");
-					cnt++;
-					}
-//					System.out.println(tmpPgSets.length);
 					MovieTime tmpPgSet = tmpPgSets[j];
 
-//					Main myTools = new Main();
 					int tmpNumOfList = list.getNumOfList();
 
 					int tmpLIndexes[] = list.getIndexes();
@@ -139,34 +111,28 @@ public class Main {
 					Time next = tmpPgSet.getStart();
 
 					//見れるかな？
-//					System.out.println(end+"---"+next);
 					if(isAbleToWatch(end, next)){
 						int tmpIndexes[] = list.getIndexes().clone();
 						int tmpTimeSets[] = list.getTimeSets().clone();
 						int tmpInterval[] = list.getInterval().clone();
-						
+
 						WatchList tmpWatchList = getNewWatchList(tmpIndexes, tmpTimeSets);
 						tmpWatchList.setInterval(tmpInterval);
 						tmpWatchList.setNumOfList(list.getNumOfList());
-						
-						if(cnt < 800){
-							System.out.println(end.displayTime()+", "+ next.displayTime());
-							System.out.println("list    : "+list.getNumOfList());
-							System.out.println("tmplist : "+tmpWatchList.getNumOfList());
-						}
 
-						//////////////////////ここから
+
 						int tmpNumOfWl = tmpWatchList.getNumOfList();
 						int tmpWlIndexes[] = tmpWatchList.getIndexes();
 						int tmpWlSets[] = tmpWatchList.getTimeSets();
 
-//						System.out.println("eee: "+ tmpNumOfWl);
+						// 記録
 						tmpWlIndexes[tmpNumOfWl] = nowIndex;
 						tmpWlSets[tmpNumOfWl] = j;
 						tmpWatchList.addNumOfList();
+						tmpNumOfWl = tmpWatchList.getNumOfList();
 
 						if (tmpNumOfWl > 1) {
-							Time prevEnd = tmpPgSets[tmpNumOfWl-2].getEnd();
+							Time prevEnd = program[tmpIndexes[tmpNumOfWl-2]-1].getTimeSets()[tmpTimeSets[tmpNumOfWl-2]].getEnd();
 							Time nowStart = tmpPgSet.getStart();
 
 							int diff = differTime(prevEnd, nowStart);
@@ -176,40 +142,26 @@ public class Main {
 						tmpWatchList.setIndexes(tmpWlIndexes);
 						tmpWatchList.setTimeSet(tmpWlSets);
 
-						if(tmpWatchList.getNumOfList() == numOfMovie){
-							if(isBetter(tmpWatchList)){
-								bestWatchList.setIndexes(tmpWatchList.getIndexes());
-								bestWatchList.setTimeSet(tmpWatchList.getTimeSets());
-								bestWatchList.setInterval(tmpWatchList.getInterval());
-								bestWatchList.setNumOfList(numOfMovie);
-							}
-							bestWatchList.setMaxList(bestWatchList.getNumOfList());
-							if(bestWatchList.getMaxList() == numOfMovie){
-								bestWatchList.addCombi();
-							}
-//							System.out.println("end");
-//							tmpWatchList = null;
-						} else {
-//							System.out.println("go");
+
+						if(bestWatchList.getMaxList() == tmpWatchList.getNumOfList()) {
+							bestWatchList.addCombi();
+						} else if(bestWatchList.getMaxList() < tmpWatchList.getNumOfList()){
+							bestWatchList.setMaxList(tmpWatchList.getNumOfList());
+							bestWatchList.resetCombi();
+						}
+
+
+						if(isBetter(tmpWatchList)){
+							bestWatchList.setIndexes(tmpWatchList.getIndexes());
+							bestWatchList.setTimeSet(tmpWatchList.getTimeSets());
+							bestWatchList.setInterval(tmpWatchList.getInterval());
+							bestWatchList.setNumOfList(tmpWatchList.getNumOfList());
+						}
+
+						if(tmpWatchList.getNumOfList() != numOfMovie){
 							searchBestProgram(tmpWatchList);
 						}
 
-					} else {
-						//見れなかった・・・
-						if(j+1 == tmpPgSets.length) {
-							if(isBetter(list)){
-								bestWatchList.setIndexes(list.getIndexes());
-								bestWatchList.setTimeSet(list.getTimeSets());
-								bestWatchList.setInterval(list.getInterval());
-								bestWatchList.setNumOfList(list.getNumOfList());
-							}
-							bestWatchList.setMaxList(bestWatchList.getNumOfList());
-							if(bestWatchList.getMaxList() == list.getNumOfList()){
-								bestWatchList.addCombi();
-							} else if(bestWatchList.getMaxList() < list.getNumOfList()){
-								bestWatchList.resetCombi();
-							}
-						}
 					}
 				}
 			}
@@ -218,7 +170,6 @@ public class Main {
 
 	public boolean isAbleToWatch(Time endTime, Time nextTime){
 		endTime = addTime(endTime, minInterval);
-//		System.out.println(endTime+"---"+nextTime);
 
 		return isEarlier(endTime, nextTime);
 	}
@@ -232,7 +183,7 @@ public class Main {
 		hour = mm / 60;
 		hh += hour;
 		mm -= (hour * 60);
-		
+
 		Time result = new Time(hh, mm);
 
 		return result;
@@ -309,12 +260,12 @@ public class Main {
 		} else {
 			if (bestWatchList.getNumOfList() < tmp.getNumOfList()) {
 				isBetter = true;
-			} else if (bestWatchList.getNumOfList() < tmp.getNumOfList()) {
-				MovieTime tmpTimes[] = program[tmp.getIndexes()[0]].getTimeSets();
-				MovieTime bestTimes[] = program[bestWatchList.getIndexes()[0]].getTimeSets();
+			} else if (bestWatchList.getNumOfList() == tmp.getNumOfList()) {
+				MovieTime tmpTimes[] = program[tmp.getIndexes()[0]-1].getTimeSets();
+				MovieTime bestTimes[] = program[bestWatchList.getIndexes()[0]-1].getTimeSets();
 
-				Time tmpStart = tmpTimes[0].getStart();
-				Time bestStart = bestTimes[0].getStart();
+				Time tmpStart = tmpTimes[tmp.getTimeSets()[0]].getStart();
+				Time bestStart = bestTimes[bestWatchList.getTimeSets()[0]].getStart();
 
 				if (isEarlier(bestStart, tmpStart)) {
 					// tmpのほうが遅いのでok
@@ -431,12 +382,12 @@ public class Main {
 		public void setNumOfList(int numOfList) {
 			this.numOfList = numOfList;
 		}
-		
+
 		public int getNumOfList() {
 			return numOfList;
 		}
-		
-		
+
+
 		public void addNumOfList(){
 			numOfList++;
 		}
@@ -517,7 +468,7 @@ public class Main {
 		}
 
 	}
-	
+
 	public class Time {
 		int hour = 0;
 		int minute = 0;
@@ -545,7 +496,7 @@ public class Main {
 		public void setMinute(int mm) {
 			this.minute = mm;
 		}
-		
+
 		public void setTime(String time){
 			String[] arr = time.split(":");
 			this.hour = Integer.parseInt(arr[0]);
