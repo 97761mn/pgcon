@@ -69,11 +69,11 @@ public class Main {
 		list = myTools.getNewWatchList(new int[numOfMovie], new int[numOfMovie]);
 
 		myTools.searchBestProgram(list);
+		System.out.println("end!!!!!");
 		myTools.showBestList();
 	}
 
 	public void showBestList(){
-		Main myTools = new Main();
 		int num = bestWatchList.getNumOfList();
 		int com = bestWatchList.getCombi();
 		int indexes[] = bestWatchList.getIndexes();
@@ -84,7 +84,7 @@ public class Main {
 		System.out.println(num);
 		System.out.println(com);
 		for(int i=0; i < num; i++){
-			tmpMovie = program[indexes[i]];
+			tmpMovie = program[indexes[i]-1];
 			System.out.print(
 				tmpMovie.getTitle() + " " + tmpMovie.getTimeSets()[set[i]].getStart().displayTime() + " " + tmpMovie.getTimeSets()[set[i]].getEnd().displayTime()
 			);
@@ -96,12 +96,16 @@ public class Main {
 		}
 	}
 
-	public void searchBestProgram(WatchList list){
+	public boolean ttt = true;
+	public int cnt = 0;
+	public void searchBestProgram(WatchList list) {
 		//すべての映画を考慮していく
 		for(int i=0; i < program.length; i++){
 			MovieProgram tmpPg = program[i];
 			int       nowIndex = tmpPg.getIndex();
-//			System.out.println("i : "+ i);
+			if(cnt < 800){
+			System.out.println("i : "+ i);
+			}
 //			System.out.println("in : "+ nowIndex);
 
 			if(!list.isWatched(nowIndex)){
@@ -109,11 +113,16 @@ public class Main {
 
 				//ある映画を前から見れるか見ていく
 				for(int j=0; j < tmpPgSets.length; j++){
-//					System.out.println("j : "+ j);
+					if(cnt < 800){
+					System.out.println(tmpPgSets.length);
+					ttt=false;
+					System.out.print("j : "+ j + ", ");
+					cnt++;
+					}
 //					System.out.println(tmpPgSets.length);
 					MovieTime tmpPgSet = tmpPgSets[j];
 
-					Main myTools = new Main();
+//					Main myTools = new Main();
 					int tmpNumOfList = list.getNumOfList();
 
 					int tmpLIndexes[] = list.getIndexes();
@@ -125,19 +134,27 @@ public class Main {
 					} else {
 						int tmpLIndex = tmpLIndexes[tmpNumOfList-1];
 						int tmpLSet   = tmpLSets[tmpNumOfList-1];
-						end = program[tmpLIndex].getTimeSets()[tmpLSet].getEnd();
+						end = program[tmpLIndex-1].getTimeSets()[tmpLSet].getEnd();
 					}
 					Time next = tmpPgSet.getStart();
 
 					//見れるかな？
 //					System.out.println(end+"---"+next);
-					if(myTools.isAbleToWatch(end, next)){
+					if(isAbleToWatch(end, next)){
 						int tmpIndexes[] = list.getIndexes().clone();
 						int tmpTimeSets[] = list.getTimeSets().clone();
+						int tmpInterval[] = list.getInterval().clone();
 						
-						WatchList tmpWatchList = myTools.getNewWatchList(tmpIndexes, tmpTimeSets);
+						WatchList tmpWatchList = getNewWatchList(tmpIndexes, tmpTimeSets);
+						tmpWatchList.setInterval(tmpInterval);
 						tmpWatchList.setNumOfList(list.getNumOfList());
 						
+						if(cnt < 800){
+							System.out.println(end.displayTime()+", "+ next.displayTime());
+							System.out.println("list    : "+list.getNumOfList());
+							System.out.println("tmplist : "+tmpWatchList.getNumOfList());
+						}
+
 						//////////////////////ここから
 						int tmpNumOfWl = tmpWatchList.getNumOfList();
 						int tmpWlIndexes[] = tmpWatchList.getIndexes();
@@ -152,7 +169,7 @@ public class Main {
 							Time prevEnd = tmpPgSets[tmpNumOfWl-2].getEnd();
 							Time nowStart = tmpPgSet.getStart();
 
-							int diff = myTools.differTime(prevEnd, nowStart);
+							int diff = differTime(prevEnd, nowStart);
 							tmpWatchList.setInterval(diff, tmpNumOfWl-2);
 						}
 
@@ -160,37 +177,38 @@ public class Main {
 						tmpWatchList.setTimeSet(tmpWlSets);
 
 						if(tmpWatchList.getNumOfList() == numOfMovie){
-							if(myTools.isBetter(tmpWatchList)){
+							if(isBetter(tmpWatchList)){
 								bestWatchList.setIndexes(tmpWatchList.getIndexes());
 								bestWatchList.setTimeSet(tmpWatchList.getTimeSets());
-							}
-							if(bestWatchList.getMaxList() == numOfMovie){
-								bestWatchList.addCombi();
-							} else {
-								bestWatchList.resetCombi();
+								bestWatchList.setInterval(tmpWatchList.getInterval());
+								bestWatchList.setNumOfList(numOfMovie);
 							}
 							bestWatchList.setMaxList(bestWatchList.getNumOfList());
+							if(bestWatchList.getMaxList() == numOfMovie){
+								bestWatchList.addCombi();
+							}
 //							System.out.println("end");
 //							tmpWatchList = null;
-							myTools.searchBestProgram(list);
 						} else {
 //							System.out.println("go");
-							myTools.searchBestProgram(tmpWatchList);
+							searchBestProgram(tmpWatchList);
 						}
 
 					} else {
 						//見れなかった・・・
 						if(j+1 == tmpPgSets.length) {
-							if(myTools.isBetter(list)){
+							if(isBetter(list)){
 								bestWatchList.setIndexes(list.getIndexes());
 								bestWatchList.setTimeSet(list.getTimeSets());
-							}
-							if(bestWatchList.getMaxList() == list.getNumOfList()){
-								bestWatchList.addCombi();
-							} else {
-								bestWatchList.resetCombi();
+								bestWatchList.setInterval(list.getInterval());
+								bestWatchList.setNumOfList(list.getNumOfList());
 							}
 							bestWatchList.setMaxList(bestWatchList.getNumOfList());
+							if(bestWatchList.getMaxList() == list.getNumOfList()){
+								bestWatchList.addCombi();
+							} else if(bestWatchList.getMaxList() < list.getNumOfList()){
+								bestWatchList.resetCombi();
+							}
 						}
 					}
 				}
@@ -199,11 +217,10 @@ public class Main {
 	}
 
 	public boolean isAbleToWatch(Time endTime, Time nextTime){
-		Main myTools = new Main();
 		endTime = addTime(endTime, minInterval);
 //		System.out.println(endTime+"---"+nextTime);
 
-		return myTools.isEarlier(endTime, nextTime);
+		return isEarlier(endTime, nextTime);
 	}
 
 	public Time addTime(Time endTime, int interval) {
@@ -286,7 +303,6 @@ public class Main {
 
 	public boolean isBetter(WatchList tmp){
 		boolean isBetter = false;
-		Main myTools = new Main();
 
 		if (bestWatchList.getNumOfList() == 0) {
 			isBetter = true;
@@ -300,10 +316,10 @@ public class Main {
 				Time tmpStart = tmpTimes[0].getStart();
 				Time bestStart = bestTimes[0].getStart();
 
-				if (myTools.isEarlier(bestStart, tmpStart)) {
+				if (isEarlier(bestStart, tmpStart)) {
 					// tmpのほうが遅いのでok
-					if (myTools.isSame(bestStart, tmpStart)) {
-						if(myTools.isPrior(tmp, bestWatchList)) {
+					if (isSame(bestStart, tmpStart)) {
+						if(isPrior(tmp, bestWatchList)) {
 							isBetter = true;
 						}
 					} else {
@@ -426,13 +442,12 @@ public class Main {
 		}
 
 		public boolean isWatched(int index){
-			boolean watched = false;
 			for(int i=0; i < indexes.length; i++){
 				if(indexes[i] == index){
-					watched = true;
+					return true;
 				}
 			}
-			return watched;
+			return false;
 		}
 
 	}
@@ -538,8 +553,12 @@ public class Main {
 		}
 
 		public String displayTime(){
-			String hh = ("0" + this.hour).substring(0, 2);
-			String mm = ("0" + this.minute).substring(0, 2);
+			String hh = "0" + this.hour;
+			String mm = "0" + this.minute;
+
+			hh = hh.substring(hh.length()-2);
+			mm = mm.substring(mm.length()-2);
+
 			return hh + ":" + mm;
 		}
 
